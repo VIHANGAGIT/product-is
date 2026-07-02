@@ -18,7 +18,6 @@
 
 package org.wso2.identity.integration.test.rest.api.server.flow.management.v1;
 
-import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
@@ -28,31 +27,31 @@ import org.testng.annotations.Factory;
 import org.testng.annotations.Test;
 import org.wso2.carbon.automation.engine.context.TestUserMode;
 import org.wso2.identity.integration.test.rest.api.server.flow.execution.v1.model.FlowConfig;
-import org.wso2.identity.integration.test.rest.api.server.flow.management.v1.model.Action;
-import org.wso2.identity.integration.test.rest.api.server.flow.management.v1.model.Component;
-import org.wso2.identity.integration.test.rest.api.server.flow.management.v1.model.Executor;
 import org.wso2.identity.integration.test.rest.api.server.flow.management.v1.model.FlowRequest;
 import org.wso2.identity.integration.test.rest.api.server.flow.management.v1.model.FlowResponse;
 import org.wso2.identity.integration.test.restclients.FlowManagementClient;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Map;
 
+import static org.wso2.identity.integration.test.rest.api.server.flow.management.v1.FlowDefinitionUtils.NOTIFY_USER_ACCOUNT_STATUS;
+import static org.wso2.identity.integration.test.rest.api.server.flow.management.v1.FlowDefinitionUtils.NOTIFY_USER_EXISTENCE;
+import static org.wso2.identity.integration.test.rest.api.server.flow.management.v1.FlowDefinitionUtils.USER_RESOLVE_EXECUTOR;
 import static org.wso2.identity.integration.test.rest.api.server.flow.management.v1.FlowManagementTestBase.FlowTypes.PASSWORD_RECOVERY;
 
 /**
- * Negative tests for managing the password recovery flow's user enumeration and account status controls.
+ * Negative tests for managing the password recovery flow's user enumeration and account status controls:
+ * the flags are free-form executor metadata, so the API accepts non-boolean and absent values. These tests pin
+ * that lenient contract — invalid or missing values must round-trip untouched, because the executor is expected
+ * to degrade them to the safe (disabled) state at runtime, which is asserted by
+ * {@code RecoveryEnumerationControlsExecutionPositiveTest}.
  */
 public class RecoveryEnumerationControlsManagementNegativeTest extends FlowManagementTestBase {
 
-    private static final String USER_RESOLVE_EXECUTOR = "UserResolveExecutor";
-    private static final String NOTIFY_USER_EXISTENCE = "notifyUserExistence";
-    private static final String NOTIFY_USER_ACCOUNT_STATUS = "notifyUserAccountStatus";
-    private static final String CONTROLS_DISABLED = "false";
+    private static final String NON_BOOLEAN_FLAG_VALUE = "notABoolean";
 
     private FlowManagementClient flowManagementClient;
-    private static String passwordRecoveryFlowRequestJson;
+    private String passwordRecoveryFlowRequestJson;
 
     @DataProvider(name = "restAPIUserConfigProvider")
     public static Object[][] restAPIUserConfigProvider() {
@@ -85,50 +84,60 @@ public class RecoveryEnumerationControlsManagementNegativeTest extends FlowManag
     @AfterClass(alwaysRun = true)
     public void testCleanup() throws Exception {
 
+        // Restore a well-formed flow definition so later classes never inherit the malformed variants.
+        flowManagementClient.putFlow(getFlowRequest());
         updatePasswordRecoveryFlowStatus(false);
         flowManagementClient.closeHttpClient();
         super.testConclude();
     }
 
-    @Test(description = "Update the password recovery flow with the enumeration controls disabled on the user " +
-            "resolve executor.")
-    public void testUpdateFlowWithControlsDisabled() throws Exception {
+    @Test(description = "Update the password recovery flow with non-boolean enumeration control values and verify " +
+            "the API accepts the meta without coercing or rejecting it.")
+    public void testUpdateFlowWithNonBooleanNotifyFlags() throws Exception {
 
         FlowRequest passwordRecoveryFlowRequest = getFlowRequest();
-        setNotifyFlags(passwordRecoveryFlowRequest, CONTROLS_DISABLED);
+        FlowDefinitionUtils.setUserResolveNotifyFlags(
+                passwordRecoveryFlowRequest.getSteps().get(0).getData().getComponents(),
+                NON_BOOLEAN_FLAG_VALUE, NON_BOOLEAN_FLAG_VALUE);
         flowManagementClient.putFlow(passwordRecoveryFlowRequest);
+
+        Map<String, Object> meta = getUserResolveExecutorMetaFromServer();
+        Assert.assertNotNull(meta, "UserResolveExecutor meta not found in the retrieved flow.");
+        Assert.assertEquals(String.valueOf(meta.get(NOTIFY_USER_EXISTENCE)), NON_BOOLEAN_FLAG_VALUE);
+        Assert.assertEquals(String.valueOf(meta.get(NOTIFY_USER_ACCOUNT_STATUS)), NON_BOOLEAN_FLAG_VALUE);
     }
 
-    @Test(description = "Get the password recovery flow and verify the notify flags round-trip as disabled on the " +
-            "executor meta.", dependsOnMethods = "testUpdateFlowWithControlsDisabled")
-    public void testGetFlowReflectsControlsDisabled() throws Exception {
+    @Test(description = "Update the password recovery flow with the enumeration control flags absent from the " +
+            "executor meta and verify they stay absent, pinning the out-of-the-box (secure) posture.",
+            dependsOnMethods = "testUpdateFlowWithNonBooleanNotifyFlags")
+    public void testUpdateFlowWithoutNotifyFlags() throws Exception {
+
+        FlowRequest passwordRecoveryFlowRequest = getFlowRequest();
+        FlowDefinitionUtils.setUserResolveNotifyFlags(
+                passwordRecoveryFlowRequest.getSteps().get(0).getData().getComponents(), null, null);
+        flowManagementClient.putFlow(passwordRecoveryFlowRequest);
+
+        Map<String, Object> meta = getUserResolveExecutorMetaFromServer();
+        if (meta != null) {
+            Assert.assertFalse(meta.containsKey(NOTIFY_USER_EXISTENCE),
+                    "notifyUserExistence must stay absent when not configured, but was: "
+                            + meta.get(NOTIFY_USER_EXISTENCE));
+            Assert.assertFalse(meta.containsKey(NOTIFY_USER_ACCOUNT_STATUS),
+                    "notifyUserAccountStatus must stay absent when not configured, but was: "
+                            + meta.get(NOTIFY_USER_ACCOUNT_STATUS));
+        }
+    }
+
+    private Map<String, Object> getUserResolveExecutorMetaFromServer() throws Exception {
 
         FlowResponse passwordRecoveryFlowResponse = flowManagementClient.getFlow(PASSWORD_RECOVERY);
-        Object meta = findUserResolveExecutorMeta(
-                passwordRecoveryFlowResponse.getSteps().getFirst().getData().getComponents());
-        Assert.assertTrue(meta instanceof Map, "UserResolveExecutor meta not found in the retrieved flow.");
-
-        Map<?, ?> metaMap = (Map<?, ?>) meta;
-        Assert.assertEquals(String.valueOf(metaMap.get(NOTIFY_USER_EXISTENCE)), CONTROLS_DISABLED);
-        Assert.assertEquals(String.valueOf(metaMap.get(NOTIFY_USER_ACCOUNT_STATUS)), CONTROLS_DISABLED);
+        return FlowDefinitionUtils.findExecutorMeta(
+                passwordRecoveryFlowResponse.getSteps().get(0).getData().getComponents(), USER_RESOLVE_EXECUTOR);
     }
 
     private FlowRequest getFlowRequest() throws IOException {
 
-        return new ObjectMapper(new JsonFactory()).readValue(passwordRecoveryFlowRequestJson, FlowRequest.class);
-    }
-
-    /**
-     * Set both enumeration-control flags on the {@code UserResolveExecutor} meta to the given value.
-     */
-    @SuppressWarnings("unchecked")
-    private void setNotifyFlags(FlowRequest flowRequest, String value) {
-
-        Object meta = findUserResolveExecutorMeta(flowRequest.getSteps().get(0).getData().getComponents());
-        Assert.assertTrue(meta instanceof Map, "UserResolveExecutor meta not found in the flow definition.");
-        Map<String, Object> metaMap = (Map<String, Object>) meta;
-        metaMap.put(NOTIFY_USER_EXISTENCE, value);
-        metaMap.put(NOTIFY_USER_ACCOUNT_STATUS, value);
+        return new ObjectMapper().readValue(passwordRecoveryFlowRequestJson, FlowRequest.class);
     }
 
     private void updatePasswordRecoveryFlowStatus(boolean enable) throws Exception {
@@ -137,26 +146,5 @@ public class RecoveryEnumerationControlsManagementNegativeTest extends FlowManag
         flowConfig.setFlowType(PASSWORD_RECOVERY);
         flowConfig.setIsEnabled(enable);
         flowManagementClient.updateFlowConfig(flowConfig);
-    }
-
-    private Object findUserResolveExecutorMeta(List<Component> components) {
-
-        if (components == null) {
-            return null;
-        }
-        for (Component component : components) {
-            Action action = component.getAction();
-            if (action != null && action.getExecutor() != null) {
-                Executor executor = action.getExecutor();
-                if (USER_RESOLVE_EXECUTOR.equals(executor.getName())) {
-                    return executor.getMeta();
-                }
-            }
-            Object nestedMeta = findUserResolveExecutorMeta(component.getComponents());
-            if (nestedMeta != null) {
-                return nestedMeta;
-            }
-        }
-        return null;
     }
 }
