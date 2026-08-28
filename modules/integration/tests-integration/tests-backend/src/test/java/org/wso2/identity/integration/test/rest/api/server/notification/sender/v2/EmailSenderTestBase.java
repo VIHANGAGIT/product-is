@@ -19,7 +19,7 @@
 package org.wso2.identity.integration.test.rest.api.server.notification.sender.v2;
 
 import io.restassured.RestAssured;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.testng.Assert;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -47,6 +47,7 @@ public class EmailSenderTestBase extends RESTAPIServerTestBase {
     public static final String AUTH_TYPE_BASIC = "BASIC";
     public static final String AUTH_TYPE_BEARER = "BEARER";
     public static final String AUTH_TYPE_CLIENT_CREDENTIAL = "CLIENT_CREDENTIAL";
+    public static final String AUTH_TYPE_PASSWORD_CREDENTIAL = "PASSWORD_CREDENTIAL";
     public static final String AUTH_TYPE_API_KEY = "API_KEY";
     public static final String AUTH_TYPE_NONE = "NONE";
 
@@ -57,6 +58,13 @@ public class EmailSenderTestBase extends RESTAPIServerTestBase {
     public static final String CLIENT_CREDENTIAL_CLIENT_ID = "test-client-id";
     public static final String CLIENT_CREDENTIAL_TOKEN_ENDPOINT = "https://example.com/oauth2/token";
     public static final String CLIENT_CREDENTIAL_SCOPES =
+            "internal_config_mgt_add internal_config_mgt_delete internal_config_mgt_list";
+
+    // Password Credential Auth constants
+    public static final String PASSWORD_CREDENTIAL_CLIENT_ID = "test-password-credential-client-id";
+    public static final String PASSWORD_CREDENTIAL_USERNAME = "test-password-credential-username";
+    public static final String PASSWORD_CREDENTIAL_TOKEN_ENDPOINT = "https://example.com/oauth2/token";
+    public static final String PASSWORD_CREDENTIAL_SCOPES =
             "internal_config_mgt_add internal_config_mgt_delete internal_config_mgt_list";
 
 

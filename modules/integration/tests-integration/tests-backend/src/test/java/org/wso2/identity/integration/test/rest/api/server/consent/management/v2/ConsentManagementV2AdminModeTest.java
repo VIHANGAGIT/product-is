@@ -227,10 +227,10 @@ public class ConsentManagementV2AdminModeTest extends ConsentManagementV2TestBas
     }
 
     @Test
-    public void testAdminListConsentsWithSubjectIdFilter() throws Exception {
+    public void testAdminListConsentsWithUserIdFilter() throws Exception {
 
         String token = getAdminToken(SCOPE_CONSENT_VIEW);
-        getResponseOfGetWithOAuth2(CONSENTS_ENDPOINT + "?subjectId=" + ADMIN_MODE_USER, token)
+        getResponseOfGetWithOAuth2(CONSENTS_ENDPOINT + "?userId=" + ADMIN_MODE_USER + "&relation=SUBJECT", token)
                 .then()
                 .log().ifValidationFails()
                 .assertThat()
@@ -483,8 +483,8 @@ public class ConsentManagementV2AdminModeTest extends ConsentManagementV2TestBas
 
     /**
      * Adding a new authorizer without a {@code state} must leave it PENDING. PENDING authorizations
-     * are not exposed in the response DTO, so the user must be absent from the authorization list
-     * while the recomputed consent state becomes PENDING.
+     * are exposed in the response DTO, so the user must be present in the authorization list with a
+     * PENDING state while the recomputed consent state becomes PENDING.
      */
     @Test
     public void testAdminAddAuthorizerWithoutStateRemainsPending() throws Exception {
@@ -500,7 +500,8 @@ public class ConsentManagementV2AdminModeTest extends ConsentManagementV2TestBas
                 .statusCode(HttpStatus.SC_OK)
                 .body("id", equalTo(consentId))
                 .body("state", equalTo("PENDING"))
-                .body("authorizations.find { it.userId == '" + ADMIN_MODE_USER + "' }", nullValue());
+                .body("authorizations.find { it.userId == '" + ADMIN_MODE_USER + "' }.state",
+                        equalTo("PENDING"));
     }
 
     /**

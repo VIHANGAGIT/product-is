@@ -36,7 +36,7 @@ import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
@@ -362,7 +362,8 @@ public class OAuth2RestClient extends RestBaseClient {
                 }
             }
             if (!isLegacyAuthzRuntimeEnabled()) {
-                if ((application.getAssociatedRoles() != null) && application.getAssociatedRoles().getRoles() != null) {
+                if ((application.getAssociatedRoles() != null) && application.getAssociatedRoles().getRoles() != null
+                        && !application.getAssociatedRoles().getRoles().isEmpty()) {
                     try (CloseableHttpResponse response = getResponseOfHttpPatch(endPointUrl, jsonRequest,
                             getHeaders())) {
                         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpServletResponse.SC_FORBIDDEN,
@@ -402,7 +403,8 @@ public class OAuth2RestClient extends RestBaseClient {
                 }
             }
             if (!isLegacyAuthzRuntimeEnabled()) {
-                if ((application.getAssociatedRoles() != null) && application.getAssociatedRoles().getRoles() != null) {
+                if ((application.getAssociatedRoles() != null) && application.getAssociatedRoles().getRoles() != null
+                        && !application.getAssociatedRoles().getRoles().isEmpty()) {
                     try (CloseableHttpResponse response = getResponseOfHttpPatch(endPointUrl, jsonRequest,
                             getHeadersWithBearerToken(switchedM2MToken))) {
                         Assert.assertEquals(response.getStatusLine().getStatusCode(), HttpServletResponse.SC_FORBIDDEN,
