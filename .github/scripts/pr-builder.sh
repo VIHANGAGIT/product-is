@@ -23,6 +23,7 @@ declare -a ALL_TESTS=(
     "is-tests-uuid-user-store"
     "is-tests-federation"
     "is-tests-federation-restart"
+    "is-tests-connection-sharing"
     "is-tests-jdbc-userstore"
     "is-tests-read-only-userstore"
     "is-tests-oauth-jwt-token-gen-enabled"
@@ -107,7 +108,16 @@ if [ "$REPO" = "product-is" ]; then
   echo ""
   echo "Applying PR $PULL_NUMBER as a diff..."
   echo "=========================================================="
-  wget -q --output-document=diff.diff $PR_LINK.diff
+  curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o diff.diff "$PR_LINK.diff" || {
+    echo 'Downloading diff failed. Exiting...'
+    echo "::error::Downloading diff failed."
+    exit 1
+  }
+  if [ ! -s diff.diff ]; then
+    echo 'Downloaded diff is empty. Exiting...'
+    echo "::error::Downloaded diff is empty."
+    exit 1
+  fi
   cat diff.diff
   echo "=========================================================="
   git apply diff.diff || {
@@ -214,7 +224,16 @@ else
   echo ""
   echo "Applying PR $PULL_NUMBER as a diff..."
   echo "=========================================================="
-  wget -q --output-document=diff.diff $PR_LINK.diff
+  curl -fsSL --retry 5 --retry-all-errors --retry-delay 5 -o diff.diff "$PR_LINK.diff" || {
+    echo 'Downloading diff failed. Exiting...'
+    echo "::error::Downloading diff failed."
+    exit 1
+  }
+  if [ ! -s diff.diff ]; then
+    echo 'Downloaded diff is empty. Exiting...'
+    echo "::error::Downloaded diff is empty."
+    exit 1
+  fi
   cat diff.diff
   echo "=========================================================="
   git apply diff.diff || {
@@ -229,7 +248,7 @@ else
 
   export JAVA_HOME=$JAVA_21_HOME
 
-  mvn clean install -Dmaven.test.skip=true --batch-mode | tee mvn-build.log
+  mvn clean install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dspotbugs.skip=true -Dcheckstyle.skip=true --batch-mode | tee mvn-build.log
 
   echo ""
   echo "Dependency repo $REPO build complete."
@@ -333,7 +352,7 @@ else
 
 
     export JAVA_HOME=$JAVA_21_HOME
-    mvn clean install -Dmaven.test.skip=true --batch-mode | tee mvn-build.log
+    mvn clean install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dspotbugs.skip=true -Dcheckstyle.skip=true --batch-mode | tee mvn-build.log
 
     echo "Repo $OUTBOUND_AUTH_OIDC_REPO build complete."
     SUB_REPO_BUILD_STATUS=$(cat mvn-build.log | grep "\[INFO\] BUILD" | grep -oE '[^ ]+$')
@@ -387,7 +406,7 @@ else
     echo "=========================================================="
 
     export JAVA_HOME=$JAVA_21_HOME
-    mvn clean install -Dmaven.test.skip=true --batch-mode | tee mvn-build.log
+    mvn clean install -Dmaven.test.skip=true -Dmaven.javadoc.skip=true -Dspotbugs.skip=true -Dcheckstyle.skip=true --batch-mode | tee mvn-build.log
 
     echo "Repo $SCIM2_REPO build complete."
     SUB_REPO_BUILD_STATUS=$(cat mvn-build.log | grep "\[INFO\] BUILD" | grep -oE '[^ ]+$')

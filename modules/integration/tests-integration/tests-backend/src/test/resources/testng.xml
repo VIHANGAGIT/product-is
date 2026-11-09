@@ -178,6 +178,8 @@
             <class name="org.wso2.identity.integration.test.oauth2.OAuth2RichAuthorizationRequestsGrantTypesTestCase"/>
             <class name="org.wso2.identity.integration.test.oauth2.Oauth2ImpersonationTestCase"/>
             <class name="org.wso2.identity.integration.test.oauth2.Oauth2SharedUserImpersonationTestCase"/>
+            <class name="org.wso2.identity.integration.test.oauth2.Oauth2DelegationTestCase"/>
+            <class name="org.wso2.identity.integration.test.oauth2.OAuth2TokenExchangeLocalSubjectTokenTestCase"/>
             <class name="org.wso2.identity.integration.test.oidc.OIDCAccessTokenAttributesTestCase"/>
             <class name="org.wso2.identity.integration.test.oauth2.OAuth2AuthorizationCodeGrantJWTTokenTestCase"/>
             <class name="org.wso2.identity.integration.test.recovery.PasswordRecoveryTestCase"/>
@@ -211,6 +213,7 @@
             <class name="org.wso2.identity.integration.test.otpProviderFailure.email.EmailOTPProviderFailureLoginNativeTest"/>
             <class name="org.wso2.identity.integration.test.otpProviderFailure.sms.SMSOTPProviderFailureLoginRedirectTest"/>
             <class name="org.wso2.identity.integration.test.otpProviderFailure.sms.SMSOTPProviderFailureLoginNativeTest"/>
+            <class name="org.wso2.identity.integration.test.auth.SMSOTPMobileNumberEnrollmentTestCase"/>
         </classes>
     </test>
 
@@ -520,6 +523,12 @@
             <class name="org.wso2.identity.integration.test.saml.ChangeACSUrlTestCase"/>
             <class name="org.wso2.identity.integration.test.oauth2.SharedUserSubOrgAppFederatedAssociationTestCase"/>
             <class name="org.wso2.identity.integration.test.oauth2.JITUserAssociationTestCase"/>
+        </classes>
+    </test>
+    <test name="is-tests-connection-sharing" preserve-order="true" parallel="false" group-by-instances="true">
+        <classes>
+            <class name="org.wso2.identity.integration.test.rest.api.server.idp.v1.sharing.IdPSharingSuccessTest"/>
+            <class name="org.wso2.identity.integration.test.rest.api.server.idp.v1.sharing.IdPSharingFailureTest"/>
         </classes>
     </test>
     <test name="is-tests-jdbc-userstore" preserve-order="true" parallel="false" group-by-instances="true">

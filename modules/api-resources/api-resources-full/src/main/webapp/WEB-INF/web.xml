@@ -83,8 +83,11 @@
                 org.wso2.carbon.identity.rest.api.server.workflow.v1.WorkflowAssociationsApi,
                 org.wso2.carbon.identity.rest.api.server.workflow.v1.WorkflowInstancesApi,
                 org.wso2.carbon.identity.api.server.vc.template.management.v1.VcTemplatesApi,
+                org.wso2.carbon.identity.api.server.vp.template.management.v1.PresentationDefinitionsApi,
                 org.wso2.carbon.identity.api.server.credential.management.v1.UsersApi,
                 org.wso2.carbon.identity.api.server.moesif.publisher.v1.MoesifPublishersApi,
+                org.wso2.carbon.identity.api.server.policy.v1.PoliciesApi,
+                org.wso2.carbon.identity.api.server.device.mgt.v1.DevicesApi,
 				org.wso2.carbon.identity.api.server.organization.capability.governance.v1.OrgGovernanceApi
             </param-value>
         </init-param>
@@ -124,7 +127,8 @@
             <param-value>
                 org.wso2.carbon.identity.rest.api.server.email.template.v2.EmailApi,
                 org.wso2.carbon.identity.api.server.notification.sender.v2.NotificationSendersApi,
-                org.wso2.carbon.identity.api.server.organization.user.sharing.management.v2.UsersApi
+                org.wso2.carbon.identity.api.server.organization.user.sharing.management.v2.UsersApi,
+                org.wso2.carbon.identity.api.server.webhook.management.v2.WebhooksApi
             </param-value>
         </init-param>
         <init-param>
@@ -180,7 +184,9 @@
                 org.wso2.carbon.identity.api.server.api.resource.v1.ApiResourcesApi,
                 org.wso2.carbon.identity.api.server.api.resource.v1.ScopesApi,
                 org.wso2.carbon.identity.api.server.credential.management.v1.UsersApi,
-                org.wso2.carbon.identity.api.server.organization.capability.governance.v1.OrgGovernanceApi
+                org.wso2.carbon.identity.api.server.vp.template.management.v1.PresentationDefinitionsApi,
+                org.wso2.carbon.identity.api.server.organization.capability.governance.v1.OrgGovernanceApi,
+                org.wso2.carbon.identity.api.server.device.mgt.v1.DevicesApi
             </param-value>
         </init-param>
         <init-param>
@@ -378,7 +384,8 @@
                 org.wso2.carbon.identity.rest.api.user.idv.v1.DefaultApi,
                 org.wso2.carbon.identity.api.user.onboard.v1.OfflineInviteLinkApi,
                 org.wso2.carbon.identity.api.user.password.v1.MeApi,
-                org.wso2.carbon.identity.api.user.consent.v1.MeApi
+                org.wso2.carbon.identity.api.user.consent.v1.MeApi,
+                org.wso2.carbon.identity.rest.api.user.device.v1.MeApi
             </param-value>
         </init-param>
         <init-param>
@@ -538,7 +545,8 @@
                 org.wso2.carbon.identity.rest.api.user.idv.v1.DefaultApi,
                 org.wso2.carbon.identity.api.user.onboard.v1.OfflineInviteLinkApi,
                 org.wso2.carbon.identity.api.user.password.v1.MeApi,
-                org.wso2.carbon.identity.api.user.consent.v1.MeApi
+                org.wso2.carbon.identity.api.user.consent.v1.MeApi,
+                org.wso2.carbon.identity.rest.api.user.device.v1.MeApi
             </param-value>
         </init-param>
         <init-param>
